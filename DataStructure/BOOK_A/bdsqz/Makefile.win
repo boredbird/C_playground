@@ -1,0 +1,29 @@
+# Project: bdsqz
+# Makefile created by Dev-C++ 4.9.9.0
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = 
+OBJ  = main.o $(RES)
+LINKOBJ  = main.o $(RES)
+LIBS =  -L"d:/Dev-Cpp/lib"  
+INCS =  -I"d:/Dev-Cpp/include" 
+CXXINCS =  -I"d:/Dev-Cpp/include/c++/3.3.1"  -I"d:/Dev-Cpp/include/c++/3.3.1/mingw32"  -I"d:/Dev-Cpp/include/c++/3.3.1/backward"  -I"d:/Dev-Cpp/lib/gcc-lib/mingw32/3.3.1/include"  -I"d:/Dev-Cpp/include" 
+BIN  = bdsqz.exe
+CXXFLAGS = $(CXXINCS)  
+CFLAGS = $(INCS)  
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before bdsqz.exe all-after
+
+
+clean: clean-custom
+	rm -f $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC) $(LINKOBJ) -o "bdsqz.exe" $(LIBS)
+
+main.o: main.c
+	$(CC) -c main.c -o main.o $(CFLAGS)

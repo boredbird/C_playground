@@ -1,0 +1,211 @@
+#include "stdio.h"
+#include "conio.h"
+#include "string.h"
+#include "stdlib.h"
+#include "time.h"
+
+#define M 8
+#define N 8
+
+enum Boolean {false, true};
+enum Orient {east = 0, south, west, north};
+
+typedef struct
+{
+	int hori;
+	int vert;
+}Coordinate;
+
+typedef struct cell
+{
+	enum Boolean wall[4];
+	enum Boolean visited;
+	int visitID;
+}Cell;
+
+Cell maze[M][N];
+Coordinate stack[M * N];
+int top = -1;	//指向实际的栈顶
+
+
+void Push(int hori, int vert)
+{
+	stack[++top].hori = hori;
+	stack[top].vert = vert;
+}
+
+void Pop()	//Coordinate *coordinate
+{
+	top--;
+//	coordinate->hori = stack[top].hori;
+//	coordinate->vert = stack[top--].vert;
+}
+
+enum Boolean StackEmpty()
+{
+	if (top == -1)
+		return true;
+	else
+		return false;
+}
+
+int NextOrient(int current_hori, int current_vert)
+{
+	int rnd = (int)(4 * rand() / (RAND_MAX));
+	int times = 0;
+	int next_hori, next_vert;
+
+	while(times < 4)
+	{
+		switch(rnd)
+		{
+			case east:
+				next_hori = current_hori;
+				next_vert = current_vert + 1;				
+				break;
+			case south:
+				next_hori = current_hori + 1;
+				next_vert = current_vert;
+				break;
+			case west:
+				next_hori = current_hori;
+				next_vert = current_vert - 1;
+				break;
+			case north:
+				next_hori = current_hori - 1;
+				next_vert = current_vert;
+				break;
+		}
+
+		if((!maze[next_hori][next_vert].visited) && 
+			(next_hori >= 0)&&(next_hori < M)&&(next_vert >= 0)&&(next_vert < N))
+			break;
+
+		rnd++;
+		rnd %= 4;
+		times++;
+	}
+
+	if(times == 4)
+		return -1;
+	else
+		return rnd;
+}
+
+void CreateMaze()
+{
+	int i, j, visit_num = 0, nextOrient;
+	int current_hori, current_vert;// next_hori, next_vert;
+
+	for(i = 0; i < M; i++)
+		for(j = 0; j < N; j++)
+		{
+			maze[i][j].wall[east] = true;
+			maze[i][j].wall[south] = true;
+			maze[i][j].wall[west] = true;
+			maze[i][j].wall[north] = true;
+			maze[i][j].visited = false;
+			maze[i][j].visitID = -1;
+		}
+
+	for(i = 0; i < M * N; i++)
+	{
+		stack[i].hori = -1;
+		stack[i].vert = -1;
+	}
+
+	current_hori = 0;
+	current_vert = 0;
+	maze[current_hori][current_vert].visited = true;
+	maze[current_hori][current_vert].visitID = visit_num++;
+
+	Push(current_hori, current_vert);
+
+	srand((unsigned)time(NULL));          //初始化随机数
+	while(visit_num < M * N)
+	{
+		current_hori = stack[top].hori;
+		current_vert = stack[top].vert;
+		
+		nextOrient = NextOrient(current_hori, current_vert);
+
+		if(nextOrient == -1)
+		{
+			if(!StackEmpty())
+				Pop();
+			else
+			{
+				printf("Error: Stack is empty.");
+				exit(0);
+			}
+			continue;
+		}
+		else
+		{
+			maze[current_hori][current_vert].wall[nextOrient] = false;	//拆当前格子的墙
+
+			switch(nextOrient)
+			{
+				case east:					
+					current_vert = current_vert + 1;
+					break;
+				case south:
+					current_hori = current_hori + 1;
+					break;
+				case west:
+					current_vert = current_vert - 1;
+					break;
+				case north:
+					current_hori = current_hori - 1;
+					break;
+			}
+
+			maze[current_hori][current_vert].wall[(nextOrient + 2) % 4] = false;	////拆下一格子的墙
+			maze[current_hori][current_vert].visited = true;
+			maze[current_hori][current_vert].visitID = visit_num++;
+
+			Push(current_hori, current_vert);
+		}
+	}
+}
+
+void PrintMaze()
+{
+	int i, j;
+
+	printf("\n");
+	for(i = 0; i < M; i++)
+	{
+		for(j = 0; j < N; j++)
+		{
+			printf("%1d, %2d; ",maze[i][j].visited, maze[i][j].visitID);
+		}
+		printf("\n");
+	}
+
+	printf("\n");
+	for(i = 0; i < M; i++)
+	{
+		for(j = 0; j < N; j++)
+		{
+			if(maze[i][j].wall[north] && maze[i][j].wall[west])
+				printf("┌");
+			else if(maze[i][j].wall[north])
+				printf("─");
+			else if(maze[i][j].wall[west])
+				printf("│");
+			else
+				printf("　");
+		}
+		printf("\n");
+	}
+}
+
+int main()
+{
+	CreateMaze();
+
+	PrintMaze();
+
+	getch();
+}
